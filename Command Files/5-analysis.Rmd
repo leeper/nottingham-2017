@@ -1,0 +1,55 @@
+---
+title: "Money, Happiness and the Midlife Crisis"
+author: "Richard Ball"
+date: 2017-03-08
+output: pdf_document
+---
+
+This is an Rmarkdown document.
+
+```{r data, echo=FALSE, results="hide"}
+library("knitr")
+opts_chunk$set(echo=FALSE)
+library("rio")
+library("ggplot2")
+suppressPackageStartupMessages(library("stargazer"))
+country <- rio::import("../Analysis Data/country-analysis.dta")
+individual <- rio::import("../Analysis Data/individual-analysis.dta")
+```
+
+There are some descriptive statistics about the data:
+
+```{r table1}
+kable(aggregate(cbind(cm_satis, inc, exp) ~ CountryName, data = country, FUN = mean))
+```
+
+And the main regression are shown in the table.
+
+```{r table2, results = "asis"}
+stargazer(
+  x1 <- lm(satis ~ age + age2, data = individual),
+  x2 <- lm(satis ~ age + age2 + factor(country), data = individual),
+  header = FALSE
+)
+```
+
+```{r inlinenumbers, results="hide"}
+ageatminsatis1 <- -coef(x1)["age"]/(2*coef(x1)["age2"])
+ageatminsatis2 <- -coef(x2)["age"]/(2*coef(x2)["age2"])
+```
+
+Figures 1 and 2 show some patterns.
+
+```{r figure1}
+ggplot(country, aes(x = inc, y = cm_satis)) + 
+  geom_point() + 
+  geom_text(aes(label = CountryName))
+```
+
+```{r figure2}
+ggplot(country, aes(x = exp, y = cm_satis)) + 
+  geom_point() + 
+  geom_text(aes(label = CountryName))
+```
+  
+To summarize, here are some main results. To summarize, here are some main results. The estimated minimum SWB without country fixed effects is `r ageatminsatis1`. By contrast, the estimated minimum SWB with country fixed effects is `r ageatminsatis2`.
